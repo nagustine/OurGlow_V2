@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 import '../../data/mock_products.dart';
 import '../../models/product.dart';
+import '../../services/service_locator.dart';
+import '../auth/login_register_screen.dart';
 import '../product/product_detail_screen.dart';
 import '../product/product_list_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -63,6 +66,8 @@ class _AppDrawer extends StatelessWidget {
     required this.currentIndex,
     required this.onMenuTap,
   });
+
+  bool get _isLoggedIn => ServiceLocator.auth.currentUser != null;
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +138,132 @@ class _AppDrawer extends StatelessWidget {
                 ),
               );
             }),
+            const Spacer(),
+            const Divider(color: Colors.white24, height: 1),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: _isLoggedIn
+                  ? _buildProfileSection(context)
+                  : _buildLoginButton(context),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLoginButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LoginRegisterScreen(),
+            ),
+          );
+        },
+        icon: const Icon(Icons.login, size: 18),
+        label: Text(
+          'Login Sekarang',
+          style: AppText.buttonLabel.copyWith(fontSize: 14),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.accent,
+          foregroundColor: AppColors.primary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(BuildContext context) {
+    final user = ServiceLocator.auth.currentUser;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                user?.nama.isNotEmpty == true
+                    ? user!.nama[0].toUpperCase()
+                    : '?',
+                style: AppText.sectionTitle.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user?.nama ?? '',
+                    style: AppText.body.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    user?.email ?? '',
+                    style: AppText.caption.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 44,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.person_outline, size: 18),
+            label: const Text('Lihat Profil'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.accent,
+              side: const BorderSide(
+                color: AppColors.accent,
+                width: 1.5,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -160,8 +288,8 @@ class _HomeBodyState extends State<_HomeBody> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       controller: _scrollController,
-      child: Column(
-        children: const [
+      child: const Column(
+        children: [
           _HeroSection(),
           _ScanCardSection(),
           _FeatureRow(),
@@ -245,6 +373,15 @@ class _Navbar extends StatelessWidget {
     required this.onOpenDrawer,
   });
 
+  bool get _isLoggedIn => ServiceLocator.auth.currentUser != null;
+
+  void _onProfileTap(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = _getSize(context);
@@ -253,66 +390,29 @@ class _Navbar extends StatelessWidget {
 
     if (isMobile || isTablet) {
       return Container(
+        height: 56,
         color: AppColors.primary,
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
           children: [
             SizedBox(
-              height: 56,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: InkWell(
-                        onTap: onOpenDrawer,
-                        borderRadius: BorderRadius.circular(AppRadius.small),
-                        child: const Icon(
-                          Icons.menu,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                    Image.asset(
-                      AppAssets.logo,
-                      height: 32,
-                      errorBuilder: (_, __, ___) =>
-                          const SizedBox(height: 32),
-                    ),
-                  ],
+              width: 48,
+              height: 48,
+              child: InkWell(
+                onTap: onOpenDrawer,
+                borderRadius: BorderRadius.circular(AppRadius.small),
+                child: const Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
             ),
-            Container(
-              width: double.infinity,
-              color: AppColors.background,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      minimumSize: const Size(48, 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
-                      ),
-                    ),
-                    child: Text(
-                      'Login',
-                      style: AppText.buttonLabel.copyWith(fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
+            Image.asset(
+              AppAssets.logo,
+              height: 32,
+              errorBuilder: (_, __, ___) =>
+                  const SizedBox(height: 32),
             ),
           ],
         ),
@@ -368,24 +468,52 @@ class _Navbar extends StatelessWidget {
             );
           }),
           const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
+          if (_isLoggedIn)
+            OutlinedButton.icon(
+              onPressed: () => _onProfileTap(context),
+              icon: const Icon(Icons.person_outline, size: 18),
+              label: const Text('Lihat Profil'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(
+                  color: AppColors.accent,
+                  width: 1.5,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.pill),
+            )
+          else
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LoginRegisterScreen(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+              ),
+              child: Text(
+                'Login Sekarang',
+                style: AppText.buttonLabel.copyWith(fontSize: 14),
               ),
             ),
-            child: Text(
-              'Login Sekarang',
-              style: AppText.buttonLabel.copyWith(fontSize: 14),
-            ),
-          ),
         ],
       ),
     );
@@ -439,6 +567,11 @@ class _HeroSectionState extends State<_HeroSection>
     final isMobile = size == _DeviceSize.mobile;
     final hPad = _hPad(context);
 
+    final user = ServiceLocator.auth.currentUser;
+    final sapaan = user != null
+        ? 'Halo, ${user.nama}! Gimana Kulitmu Hari Ini?'
+        : 'Halo, Selamat Datang! Gimana Kulitmu Hari Ini?';
+
     final header = Column(
       crossAxisAlignment:
           isDesktop ? CrossAxisAlignment.start : CrossAxisAlignment.center,
@@ -453,7 +586,7 @@ class _HeroSectionState extends State<_HeroSection>
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           child: Text(
-            'Halo, Selamat Datang! Gimana Kulitmu Hari Ini?',
+            sapaan,
             style: AppText.badge.copyWith(
               fontWeight: FontWeight.w700,
               fontSize: isMobile ? 10 : 12,

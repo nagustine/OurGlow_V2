@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/theme.dart';
+import 'screens/auth/login_register_screen.dart';
 import 'screens/home/home_screen.dart';
 
 void main() {
@@ -15,7 +16,11 @@ class OurGlowApp extends StatelessWidget {
       title: 'OurGlow — Skincare Checker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      home: const HomeScreen(),
+      initialRoute: '/home',
+      routes: {
+        '/login': (_) => const LoginRegisterScreen(),
+        '/home': (_) => const HomeScreen(),
+      },
     );
   }
 }
