@@ -1,0 +1,184 @@
+{
+  "ingredients": [
+    {
+      "id": "retinol",
+      "name": "Retinol",
+      "aliases": ["retinol", "retinyl palmitate", "retinaldehyde", "retinoic acid", "vitamin a"],
+      "category": "active",
+      "conflicts": ["aha", "bha", "vitamin_c", "benzoyl_peroxide"],
+      "warning_skin_type": ["sensitif", "kering"],
+      "note": "Retinol tidak boleh dicampur dengan AHA/BHA, Vitamin C, atau Benzoyl Peroxide karena dapat meningkatkan risiko iritasi, kemerahan, dan pengelupasan berlebih."
+    },
+    {
+      "id": "vitamin_c",
+      "name": "Vitamin C",
+      "aliases": ["vitamin c", "ascorbic acid", "l-ascorbic acid", "sodium ascorbyl phosphate", "magnesium ascorbyl phosphate", "ethyl ascorbic acid"],
+      "category": "antioxidant",
+      "conflicts": ["retinol", "benzoyl_peroxide", "niacinamide"],
+      "warning_skin_type": ["sensitif"],
+      "note": "Vitamin C sebaiknya tidak dicampur retinol dalam satu waktu pemakaian karena pH optimumnya berbeda."
+    },
+    {
+      "id": "aha",
+      "name": "AHA (Alpha Hydroxy Acid)",
+      "aliases": ["aha", "glycolic acid", "lactic acid", "mandelic acid", "malic acid", "tartaric acid", "citric acid"],
+      "category": "exfoliant",
+      "conflicts": ["retinol", "bha", "benzoyl_peroxide", "vitamin_c"],
+      "warning_skin_type": ["sensitif", "kering"],
+      "note": "AHA bersifat eksfoliasi kuat. Menumpuk dengan BHA, retinol, atau benzoyl peroxide meningkatkan risiko iritasi."
+    },
+    {
+      "id": "bha",
+      "name": "BHA (Beta Hydroxy Acid)",
+      "aliases": ["bha", "salicylic acid", "betaine salicylate"],
+      "category": "exfoliant",
+      "conflicts": ["retinol", "aha", "benzoyl_peroxide"],
+      "warning_skin_type": ["kering", "sensitif"],
+      "note": "BHA efektif untuk kulit berminyak & berjerawat, tapi jangan ditumpuk dengan AHA atau retinol."
+    },
+    {
+      "id": "niacinamide",
+      "name": "Niacinamide",
+      "aliases": ["niacinamide", "nicotinamide", "vitamin b3"],
+      "category": "active",
+      "conflicts": ["vitamin_c"],
+      "warning_skin_type": [],
+      "note": "Niacinamide umumnya aman, tapi pada konsentrasi tinggi bisa memicu kemerahan bila dicampur Vitamin C murni."
+    },
+    {
+      "id": "benzoyl_peroxide",
+      "name": "Benzoyl Peroxide",
+      "aliases": ["benzoyl peroxide", "bpo"],
+      "category": "acne_treatment",
+      "conflicts": ["retinol", "vitamin_c", "aha", "bha"],
+      "warning_skin_type": ["kering", "sensitif"],
+      "note": "Benzoyl peroxide bersifat oksidatif kuat, dapat menonaktifkan retinol dan mengoksidasi vitamin C."
+    },
+    {
+      "id": "hyaluronic_acid",
+      "name": "Hyaluronic Acid",
+      "aliases": ["hyaluronic acid", "sodium hyaluronate", "ha"],
+      "category": "humectant",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Hyaluronic acid aman dikombinasikan dengan hampir semua bahan. Berfungsi menarik kelembapan ke kulit."
+    },
+    {
+      "id": "glycerin",
+      "name": "Glycerin",
+      "aliases": ["glycerin", "glycerol"],
+      "category": "humectant",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Humektan universal, aman untuk semua jenis kulit."
+    },
+    {
+      "id": "ceramide",
+      "name": "Ceramide",
+      "aliases": ["ceramide", "ceramide np", "ceramide ap", "ceramide eop"],
+      "category": "barrier_repair",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Ceramide memperkuat skin barrier, aman dikombinasikan dengan semua bahan aktif."
+    },
+    {
+      "id": "peptide",
+      "name": "Peptide",
+      "aliases": ["peptide", "palmitoyl tripeptide", "matrixyl", "copper peptide", "argireline"],
+      "category": "anti_aging",
+      "conflicts": ["aha", "bha"],
+      "warning_skin_type": [],
+      "note": "Peptide bisa rusak oleh eksfolian kuat pada pH rendah bila dipakai bersamaan."
+    },
+    {
+      "id": "fragrance",
+      "name": "Fragrance / Parfum",
+      "aliases": ["fragrance", "parfum", "perfume", "aroma"],
+      "category": "potential_irritant",
+      "conflicts": [],
+      "warning_skin_type": ["sensitif", "berjerawat", "iritasi"],
+      "note": "Fragrance adalah salah satu pemicu iritasi dan alergi tersering pada skincare."
+    },
+    {
+      "id": "alcohol_denat",
+      "name": "Alcohol Denat",
+      "aliases": ["alcohol denat", "denatured alcohol", "sd alcohol", "ethanol"],
+      "category": "potential_irritant",
+      "conflicts": [],
+      "warning_skin_type": ["kering", "sensitif"],
+      "note": "Alcohol denat bisa membuat kulit kering & mengganggu skin barrier bila dipakai jangka panjang."
+    },
+    {
+      "id": "essential_oil",
+      "name": "Essential Oil",
+      "aliases": ["essential oil", "lavender oil", "tea tree oil", "citrus oil", "peppermint oil", "eucalyptus oil"],
+      "category": "potential_irritant",
+      "conflicts": [],
+      "warning_skin_type": ["sensitif", "iritasi"],
+      "note": "Essential oil bisa memicu iritasi dan reaksi alergi, terutama pada kulit sensitif."
+    },
+    {
+      "id": "zinc_oxide",
+      "name": "Zinc Oxide",
+      "aliases": ["zinc oxide"],
+      "category": "sunscreen",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Mineral UV filter, aman dan cocok untuk kulit sensitif."
+    },
+    {
+      "id": "titanium_dioxide",
+      "name": "Titanium Dioxide",
+      "aliases": ["titanium dioxide"],
+      "category": "sunscreen",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Mineral UV filter, aman untuk kulit sensitif."
+    },
+    {
+      "id": "panthenol",
+      "name": "Panthenol",
+      "aliases": ["panthenol", "provitamin b5", "d-panthenol"],
+      "category": "soothing",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Menenangkan & melembapkan, aman untuk semua jenis kulit."
+    },
+    {
+      "id": "centella",
+      "name": "Centella Asiatica",
+      "aliases": ["centella asiatica", "cica", "madecassoside", "asiaticoside", "gotu kola"],
+      "category": "soothing",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Bahan menenangkan untuk kulit iritasi, aman dikombinasikan dengan semua bahan."
+    },
+    {
+      "id": "arbutin",
+      "name": "Arbutin",
+      "aliases": ["arbutin", "alpha arbutin", "beta arbutin"],
+      "category": "brightening",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Aman dikombinasikan dengan niacinamide & vitamin C untuk brightening."
+    },
+    {
+      "id": "tranexamic_acid",
+      "name": "Tranexamic Acid",
+      "aliases": ["tranexamic acid"],
+      "category": "brightening",
+      "conflicts": [],
+      "warning_skin_type": [],
+      "note": "Aman untuk mencerahkan dan menyamarkan bekas jerawat."
+    },
+    {
+      "id": "azelaic_acid",
+      "name": "Azelaic Acid",
+      "aliases": ["azelaic acid"],
+      "category": "active",
+      "conflicts": ["aha", "bha"],
+      "warning_skin_type": ["sensitif"],
+      "note": "Bisa dikombinasikan dengan niacinamide, tapi hindari tumpuk dengan eksfolian kuat lain."
+    }
+  ]
+}
