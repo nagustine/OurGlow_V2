@@ -1,4 +1,4 @@
-# ─── Flutter / Dart ───
+# Flutter / Dart
 .dart_tool/
 .packages
 .pub-cache/
@@ -6,41 +6,37 @@
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
+.metadata
 
-# ─── IDE ───
+# IDE
 .idea/
 .vscode/
 *.iml
 *.ipr
 *.iws
 
-# ─── OS ───
+# OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ─── Firebase (JANGAN DI-COMMIT — berisi API key) ───
+# Firebase Config (API key - jangan di-commit)
 lib/firebase_options.dart
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
 windows/runner/google-services.json
+firebase.json
+.firebaserc
 
-# ─── Build output ───
+# Build Output
 /build/
 /coverage/
 
-# ─── File dari image_picker / upload lokal ───
+# File Sementara
 *.log
 *.tmp
 
-# ─── Env file ───
+# Environment Variable
 .env
 .env.local
-
-# Firebase Config (JANGAN DI-COMMIT)
-firebase.json
-.firebaserc
-lib/firebase_options.dart
-android/app/google-services.json
-ios/Runner/GoogleService-Info.plist

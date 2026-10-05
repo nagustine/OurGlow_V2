@@ -3,7 +3,7 @@ import '../models/diary_entry.dart';
 import '../models/product.dart';
 
 class FirestoreService {
-  static const bool useMock = true;
+  static const bool useMock = false;
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -16,6 +16,9 @@ class FirestoreService {
   CollectionReference<Map<String, dynamic>> _productCol(String uid) =>
       _db.collection('users').doc(uid).collection('routine_products');
 
+  // ═══════════════════════════════════════════
+  // PRODUCTS
+  // ═══════════════════════════════════════════
   Future<void> addProduct(String uid, Product product) async {
     if (useMock) {
       _mockProducts.putIfAbsent(uid, () => []).add(product);
@@ -51,12 +54,26 @@ class FirestoreService {
         .toList());
   }
 
+  // ═══════════════════════════════════════════
+  // DIARY
+  // ═══════════════════════════════════════════
   Future<void> addDiary(String uid, DiaryEntry entry) async {
     if (useMock) {
       _mockDiary.putIfAbsent(uid, () => []).add(entry);
       return;
     }
     await _diaryCol(uid).doc(entry.id).set(entry.toJson());
+  }
+
+  Future<void> updateDiary(String uid, DiaryEntry entry) async {
+    if (useMock) {
+      final list = _mockDiary[uid];
+      if (list == null) return;
+      final idx = list.indexWhere((d) => d.id == entry.id);
+      if (idx != -1) list[idx] = entry;
+      return;
+    }
+    await _diaryCol(uid).doc(entry.id).update(entry.toJson());
   }
 
   Future<void> deleteDiary(String uid, String entryId) async {
@@ -73,7 +90,8 @@ class FirestoreService {
       list.sort((a, b) => b.tanggal.compareTo(a.tanggal));
       return list;
     }
-    final snap = await _diaryCol(uid).orderBy('tanggal', descending: true).get();
+    final snap =
+        await _diaryCol(uid).orderBy('tanggal', descending: true).get();
     return snap.docs
         .map((d) => DiaryEntry.fromJson(d.data(), id: d.id))
         .toList();
@@ -92,5 +110,27 @@ class FirestoreService {
         .map((snap) => snap.docs
             .map((d) => DiaryEntry.fromJson(d.data(), id: d.id))
             .toList());
+  }
+
+  Future<DiaryEntry?> getDiaryByDate(String uid, DateTime date) async {
+    final start = DateTime(date.year, date.month, date.day);
+    final end = start.add(const Duration(days: 1));
+    if (useMock) {
+      final list = _mockDiary[uid] ?? [];
+      for (final d in list) {
+        if (!d.tanggal.isBefore(start) && d.tanggal.isBefore(end)) {
+          return d;
+        }
+      }
+      return null;
+    }
+    final snap = await _diaryCol(uid)
+        .where('tanggal', isGreaterThanOrEqualTo: start.toIso8601String())
+        .where('tanggal', isLessThan: end.toIso8601String())
+        .limit(1)
+        .get();
+    if (snap.docs.isEmpty) return null;
+    final doc = snap.docs.first;
+    return DiaryEntry.fromJson(doc.data(), id: doc.id);
   }
 }

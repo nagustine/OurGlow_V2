@@ -1,9 +1,7 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../theme/theme.dart';
 import '../../models/enums.dart';
+import '../../models/enums_ext.dart';
 import '../../services/service_locator.dart';
 import '../../services/auth_service.dart';
 import '../auth/login_register_screen.dart';
@@ -20,140 +18,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _loading = true;
   int _activeTab = 0;
 
+  // Statistik
+  int _jumlahDiary = 0;
+  int _jumlahProdukRutin = 0;
+  int _jumlahScan = 0;
+  bool _loadingStats = true;
+
   @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) setState(() => _loading = false);
     });
+    _loadStats();
   }
 
   AppAuthUser? get _user => ServiceLocator.auth.currentUser;
 
-  Future<void> _pilihSumberFoto() async {
-    final choice = await showDialog<String>(
-      context: context,
-      builder: (_) => Dialog(
-        backgroundColor: AppColors.cream,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 380),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Ubah Foto Profil', style: AppText.cardTitle),
-                const SizedBox(height: 6),
-                Text(
-                  'Pilih sumber foto',
-                  style: AppText.caption,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _sumberOption(
-                  icon: Icons.photo_library_outlined,
-                  label: 'Pilih dari Galeri',
-                  onTap: () => Navigator.pop(context, 'galeri'),
-                ),
-                if (_user?.fotoPath != null) ...[
-                  const SizedBox(height: 8),
-                  _sumberOption(
-                    icon: Icons.delete_outline,
-                    label: 'Hapus Foto',
-                    warnaIcon: AppColors.statusDanger,
-                    onTap: () => Navigator.pop(context, 'hapus'),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (choice == null || !mounted) return;
-
-    if (choice == 'hapus') {
-      ServiceLocator.auth.updateFoto(null);
-      setState(() {});
-      _showSnack('Foto profil dihapus', AppColors.statusWarning);
-      return;
-    }
-
+  Future<void> _loadStats() async {
+    setState(() => _loadingStats = true);
     try {
-      final picker = ImagePicker();
-      final XFile? picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 600,
-        maxHeight: 600,
-        imageQuality: 85,
+      final diary = await ServiceLocator.diary.getAll();
+      final products = await ServiceLocator.firestore.getProducts(
+        ServiceLocator.auth.currentUid ?? '',
       );
 
-      if (picked == null) return;
+      // Untuk scan, kita asumsikan ada collection terpisah
+      // atau pakai placeholder 0 dulu — nanti setelah fitur Scan jadi
+      // kita bisa ambil dari collection scan_history
+      // Sementara: pakai 0
+      const scanCount = 0;
 
-      ServiceLocator.auth.updateFoto(picked.path);
       if (!mounted) return;
-      setState(() {});
-      _showSnack(
-        'Foto diperbarui. Upload ke Firebase Storage menyusul.',
-        AppColors.statusSafe,
-      );
+      setState(() {
+        _jumlahDiary = diary.length;
+        _jumlahProdukRutin = products.length;
+        _jumlahScan = scanCount;
+        _loadingStats = false;
+      });
     } catch (e) {
       if (!mounted) return;
-      _showSnack(
-        'Gagal memuat foto: ${e.toString()}',
-        AppColors.statusDanger,
-      );
+      setState(() => _loadingStats = false);
     }
-  }
-
-  Widget _sumberOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    Color? warnaIcon,
-  }) {
-    final warna = warnaIcon ?? AppColors.primary;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.small),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(AppRadius.small),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: warna),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: AppText.body.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: AppColors.neutral,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _showSnack(String msg, Color bg) {
@@ -235,7 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     setState(() {});
     _showSnack(
-      'Jenis kulit diubah ke ${_labelJenisKulit(baru)}',
+      'Jenis kulit diubah ke ${baru.label}',
       AppColors.statusSafe,
     );
   }
@@ -329,7 +235,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (result != null && result.isNotEmpty && mounted) {
-      ServiceLocator.auth.updateNama(result);
+      await ServiceLocator.auth.updateNama(result);
+      if (!mounted) return;
       setState(() {});
       _showSnack('Nama berhasil diubah', AppColors.statusSafe);
     }
@@ -348,7 +255,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        actions: [
+          IconButton(
+            onPressed: _loadStats,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -382,36 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: _pilihSumberFoto,
-            child: Stack(
-              children: [
-                _buildAvatar(user, size: 80),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 13,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildAvatar(user, size: 80),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -446,7 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _labelJenisKulit(user.jenisKulit),
+                      user.jenisKulit.label,
                       style: AppText.badge.copyWith(
                         color: AppColors.accent,
                         fontSize: 12,
@@ -468,53 +355,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatar(AppAuthUser user, {double size = 80}) {
-    final fotoPath = user.fotoPath;
-
-    if (fotoPath == null || fotoPath.isEmpty) {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: AppColors.accent,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
-        ),
-        alignment: Alignment.center,
-        child: user.nama.isNotEmpty
-            ? Text(
-                user.nama[0].toUpperCase(),
-                style: AppText.heroTitle.copyWith(
-                  color: AppColors.primary,
-                  fontSize: size * 0.4,
-                ),
-              )
-            : Icon(
-                Icons.person,
-                size: size * 0.5,
-                color: AppColors.primary,
-              ),
-      );
-    }
-
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
+        color: AppColors.accent,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 3),
-        image: DecorationImage(
-          image: _buildImageProvider(fotoPath),
-          fit: BoxFit.cover,
-        ),
       ),
+      alignment: Alignment.center,
+      child: user.nama.isNotEmpty
+          ? Text(
+              user.nama[0].toUpperCase(),
+              style: AppText.heroTitle.copyWith(
+                color: AppColors.primary,
+                fontSize: size * 0.4,
+              ),
+            )
+          : Icon(
+              Icons.person,
+              size: size * 0.5,
+              color: AppColors.primary,
+            ),
     );
-  }
-
-  ImageProvider _buildImageProvider(String path) {
-    if (kIsWeb) {
-      return NetworkImage(path);
-    }
-    return FileImage(File(path));
   }
 
   Widget _buildTabBar() {
@@ -622,7 +485,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 child: Text(
-                  _labelJenisKulit(j),
+                  j.label,
                   style: AppText.badge.copyWith(
                     color: active ? Colors.white : AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -641,9 +504,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Ringkasan Aktivitas',
-          style: AppText.cardTitle.copyWith(fontSize: 16),
+        Row(
+          children: [
+            Text(
+              'Ringkasan Aktivitas',
+              style: AppText.cardTitle.copyWith(fontSize: 16),
+            ),
+            const Spacer(),
+            if (_loadingStats)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
@@ -651,7 +525,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: _statCard(
                 icon: Icons.book_outlined,
-                value: '0',
+                value: '$_jumlahDiary',
                 label: 'Hari Diary',
               ),
             ),
@@ -659,7 +533,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: _statCard(
                 icon: Icons.spa_outlined,
-                value: '0',
+                value: '$_jumlahProdukRutin',
                 label: 'Produk Rutin',
               ),
             ),
@@ -667,7 +541,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: _statCard(
                 icon: Icons.qr_code_scanner,
-                value: '0',
+                value: '$_jumlahScan',
                 label: 'Kali Scan',
               ),
             ),
@@ -867,22 +741,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-  }
-
-  String _labelJenisKulit(JenisKulit j) {
-    switch (j) {
-      case JenisKulit.normal:
-        return 'Normal';
-      case JenisKulit.berminyak:
-        return 'Berminyak';
-      case JenisKulit.kering:
-        return 'Kering';
-      case JenisKulit.kombinasi:
-        return 'Kombinasi';
-      case JenisKulit.sensitif:
-        return 'Sensitif';
-      case JenisKulit.berjerawat:
-        return 'Berjerawat';
-    }
   }
 }

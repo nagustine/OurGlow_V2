@@ -5,6 +5,10 @@ import '../models/user.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  JenisKulit _jenisKulitCache = JenisKulit.normal;
+
+  String? get currentUid => _auth.currentUser?.uid;
+
   Stream<AppAuthUser?> get authStateChanges {
     return _auth.authStateChanges().map((u) {
       if (u == null) return null;
@@ -12,6 +16,7 @@ class AuthService {
         uid: u.uid,
         email: u.email ?? '',
         nama: u.displayName ?? '',
+        jenisKulit: _jenisKulitCache,
       );
     });
   }
@@ -23,6 +28,7 @@ class AuthService {
       uid: u.uid,
       email: u.email ?? '',
       nama: u.displayName ?? '',
+      jenisKulit: _jenisKulitCache,
     );
   }
 
@@ -41,6 +47,7 @@ class AuthService {
       uid: cred.user!.uid,
       email: email,
       nama: nama,
+      jenisKulit: _jenisKulitCache,
     );
   }
 
@@ -56,23 +63,22 @@ class AuthService {
       uid: cred.user!.uid,
       email: cred.user!.email ?? email,
       nama: cred.user!.displayName ?? '',
+      jenisKulit: _jenisKulitCache,
     );
   }
 
   Future<void> logout() async {
     await _auth.signOut();
+    _jenisKulitCache = JenisKulit.normal;
   }
 
   Future<void> updateJenisKulit(JenisKulit jenis) async {
-    // TODO: Simpan ke Firestore (nanti)
+    _jenisKulitCache = jenis;
   }
 
-  void updateNama(String nama) {
-    _auth.currentUser?.updateDisplayName(nama);
-  }
-
-  void updateFoto(String? fotoPath) {
-    // TODO: Simpan ke Firestore/Storage (nanti)
+  Future<void> updateNama(String nama) async {
+    await _auth.currentUser?.updateDisplayName(nama);
+    await _auth.currentUser?.reload();
   }
 
   User toAppUser(AppAuthUser u) => User(
@@ -89,14 +95,12 @@ class AppAuthUser {
   final String email;
   final String nama;
   final JenisKulit jenisKulit;
-  final String? fotoPath;
 
   const AppAuthUser({
     required this.uid,
     required this.email,
     this.nama = '',
     this.jenisKulit = JenisKulit.normal,
-    this.fotoPath,
   });
 
   AppAuthUser copyWith({
@@ -104,14 +108,12 @@ class AppAuthUser {
     String? email,
     String? nama,
     JenisKulit? jenisKulit,
-    String? fotoPath,
   }) {
     return AppAuthUser(
       uid: uid ?? this.uid,
       email: email ?? this.email,
       nama: nama ?? this.nama,
       jenisKulit: jenisKulit ?? this.jenisKulit,
-      fotoPath: fotoPath ?? this.fotoPath,
     );
   }
 }

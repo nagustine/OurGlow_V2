@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'base_model.dart';
 import 'enums.dart';
 import 'product.dart';
@@ -6,6 +7,7 @@ class DiaryEntry extends BaseModel {
   final String _id;
   final DateTime _tanggal;
   final List<KondisiKulit> _kondisiKulit;
+  final int _intensitas;
   final String _catatan;
   final String? _fotoUrl;
   final List<Product> _produkDipakai;
@@ -15,6 +17,7 @@ class DiaryEntry extends BaseModel {
     required String id,
     required DateTime tanggal,
     required List<KondisiKulit> kondisiKulit,
+    int intensitas = 50,
     String catatan = '',
     String? fotoUrl,
     List<Product> produkDipakai = const [],
@@ -22,6 +25,7 @@ class DiaryEntry extends BaseModel {
   })  : _id = id,
         _tanggal = tanggal,
         _kondisiKulit = kondisiKulit,
+        _intensitas = intensitas,
         _catatan = catatan,
         _fotoUrl = fotoUrl,
         _produkDipakai = produkDipakai,
@@ -31,7 +35,7 @@ class DiaryEntry extends BaseModel {
     final tanggalRaw = json['tanggal'];
     final tanggal = tanggalRaw is String
         ? DateTime.parse(tanggalRaw)
-        : DateTime.now();
+        : (tanggalRaw is Timestamp ? tanggalRaw.toDate() : DateTime.now());
 
     final kondisiRaw = json['kondisiKulit'] as List? ?? const [];
     final kondisiList =
@@ -47,6 +51,7 @@ class DiaryEntry extends BaseModel {
       id: id ?? json['id'] as String? ?? '',
       tanggal: tanggal,
       kondisiKulit: kondisiList,
+      intensitas: (json['intensitas'] as num?)?.toInt() ?? 50,
       catatan: json['catatan'] as String? ?? '',
       fotoUrl: json['fotoUrl'] as String?,
       produkDipakai: produkList,
@@ -57,6 +62,7 @@ class DiaryEntry extends BaseModel {
   String get id => _id;
   DateTime get tanggal => _tanggal;
   List<KondisiKulit> get kondisiKulit => List.unmodifiable(_kondisiKulit);
+  int get intensitas => _intensitas;
   String get catatan => _catatan;
   String? get fotoUrl => _fotoUrl;
   List<Product> get produkDipakai => List.unmodifiable(_produkDipakai);
@@ -91,6 +97,7 @@ class DiaryEntry extends BaseModel {
         'id': _id,
         'tanggal': _tanggal.toIso8601String(),
         'kondisiKulit': _kondisiKulit.map((e) => e.name).toList(),
+        'intensitas': _intensitas,
         'catatan': _catatan,
         if (_fotoUrl != null) 'fotoUrl': _fotoUrl,
         'produkDipakai': _produkDipakai.map((p) => p.toJson()).toList(),
@@ -101,6 +108,7 @@ class DiaryEntry extends BaseModel {
     String? id,
     DateTime? tanggal,
     List<KondisiKulit>? kondisiKulit,
+    int? intensitas,
     String? catatan,
     String? fotoUrl,
     List<Product>? produkDipakai,
@@ -110,6 +118,7 @@ class DiaryEntry extends BaseModel {
       id: id ?? _id,
       tanggal: tanggal ?? _tanggal,
       kondisiKulit: kondisiKulit ?? _kondisiKulit,
+      intensitas: intensitas ?? _intensitas,
       catatan: catatan ?? _catatan,
       fotoUrl: fotoUrl ?? _fotoUrl,
       produkDipakai: produkDipakai ?? _produkDipakai,

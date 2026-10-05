@@ -2,6 +2,7 @@ import 'auth_service.dart';
 import 'firestore_service.dart';
 import 'storage_service.dart';
 import 'ingredient_repository.dart';
+import 'diary_service.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -10,4 +11,5 @@ class ServiceLocator {
   static final FirestoreService firestore = FirestoreService();
   static final StorageService storage = StorageService();
   static final IngredientRepository ingredients = IngredientRepository();
+  static final DiaryService diary = DiaryService();
 }

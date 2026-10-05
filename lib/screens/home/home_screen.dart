@@ -8,6 +8,9 @@ import '../auth/login_register_screen.dart';
 import '../product/product_detail_screen.dart';
 import '../product/product_list_screen.dart';
 import '../profile/profile_screen.dart';
+import '../scan/scan_screen.dart';
+import '../routine/routine_screen.dart';
+import '../diary/diary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +29,60 @@ class _HomeScreenState extends State<HomeScreen> {
     'Skin Diary',
   ];
 
+  void _onMenuTap(int index) {
+    if (index == 0) {
+      setState(() => _currentMenu = 0);
+      return;
+    }
+
+    // Wajib login untuk menu selain Beranda
+    final isLoggedIn = ServiceLocator.auth.currentUser != null;
+    if (!isLoggedIn) {
+      _showLoginRequiredSnack();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const LoginRegisterScreen(),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _currentMenu = index);
+
+    Widget target;
+    switch (index) {
+      case 1:
+        target = const ScanScreen();
+        break;
+      case 2:
+        target = const RoutineScreen();
+        break;
+      case 3:
+        target = const DiaryScreen();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => target),
+    ).then((_) {
+      if (mounted) setState(() => _currentMenu = 0);
+    });
+  }
+
+  void _showLoginRequiredSnack() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Silakan login dulu untuk mengakses fitur ini'),
+        backgroundColor: AppColors.statusWarning,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,8 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
         menus: _menus,
         currentIndex: _currentMenu,
         onMenuTap: (i) {
-          setState(() => _currentMenu = i);
           Navigator.pop(context);
+          _onMenuTap(i);
         },
       ),
       body: Column(
@@ -44,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _Navbar(
             menus: _menus,
             currentIndex: _currentMenu,
-            onMenuTap: (i) => setState(() => _currentMenu = i),
+            onMenuTap: _onMenuTap,
             onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
           ),
           const Expanded(
@@ -537,13 +594,16 @@ class _HeroSectionState extends State<_HeroSection>
   void initState() {
     super.initState();
     _pageController = PageController(viewportFraction: 1.0);
-    _startAutoPlay();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _startAutoPlay();
+    });
   }
 
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (!mounted) return;
+      if (!_pageController.hasClients) return;
       final next = (_currentPage + 1) % mockProducts.length;
       _pageController.animateToPage(
         next,
@@ -789,7 +849,7 @@ class _ProductCarouselCard extends StatelessWidget {
                                     AppRadius.pill),
                               ),
                               child: Text(
-                                product.kategori.name,
+                                product.labelKategori,
                                 style: AppText.badge.copyWith(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -841,7 +901,7 @@ class _ProductCarouselCard extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    product.waktuPakai.name,
+                                    product.labelWaktuPakai,
                                     style: AppText.caption.copyWith(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -899,7 +959,7 @@ class _ProductCarouselCard extends StatelessWidget {
                                     AppRadius.pill),
                               ),
                               child: Text(
-                                product.kategori.name,
+                                product.labelKategori,
                                 style: AppText.badge.copyWith(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -950,7 +1010,7 @@ class _ProductCarouselCard extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        product.waktuPakai.name,
+                                        product.labelWaktuPakai,
                                         style:
                                             AppText.caption.copyWith(
                                           color: Colors.white,
@@ -1081,7 +1141,7 @@ class _ScanCardSection extends StatelessWidget {
                         flex: 3,
                         child: Padding(
                           padding: const EdgeInsets.all(AppSpacing.xl),
-                          child: _scanContent(isMobile, isDesktop),
+                          child: _scanContent(isMobile, isDesktop, context),
                         ),
                       ),
                       Expanded(
@@ -1133,7 +1193,7 @@ class _ScanCardSection extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      _scanContent(isMobile, isDesktop),
+                      _scanContent(isMobile, isDesktop, context),
                     ],
                   ),
                 ),
@@ -1142,7 +1202,8 @@ class _ScanCardSection extends StatelessWidget {
     );
   }
 
-  Widget _scanContent(bool isMobile, bool isDesktop) {
+  Widget _scanContent(
+      bool isMobile, bool isDesktop, BuildContext context) {
     return Column(
       crossAxisAlignment: isMobile
           ? CrossAxisAlignment.center
@@ -1189,7 +1250,14 @@ class _ScanCardSection extends StatelessWidget {
         ),
         SizedBox(height: isMobile ? 10 : AppSpacing.lg),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ScanScreen(),
+              ),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.accent,
             foregroundColor: AppColors.primary,
@@ -1222,7 +1290,14 @@ class _FeatureRow extends StatelessWidget {
 
     Widget buildCard(Map<String, dynamic> f) {
       return InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ScanScreen(),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(AppRadius.card),
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -1477,12 +1552,14 @@ class _RoutineSection extends StatelessWidget {
         'desc':
             'Masukin semua produk yang kamu pakai tiap hari, kita cek apa urutannya udah tepat dan gak ada kombinasi yang bikin iritasi.',
         'image': AppAssets.routine,
+        'action': 'routine',
       },
       {
         'title': 'Skin Diary',
         'desc':
             'Log kondisi kulit harian, lihat pola nya waktu ke waktu, dan pahami produk mana yang beneran cocok buat kulitmu.',
         'image': AppAssets.diary,
+        'action': 'diary',
       },
     ];
 
@@ -1528,7 +1605,7 @@ class _RoutineSection extends StatelessWidget {
                           child: Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8),
-                            child: _buildRoutineCard(it, isMobile),
+                            child: _buildRoutineCard(it, isMobile, context),
                           ),
                         ),
                       )
@@ -1541,7 +1618,7 @@ class _RoutineSection extends StatelessWidget {
                     .map(
                       (it) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildRoutineCard(it, isMobile),
+                        child: _buildRoutineCard(it, isMobile, context),
                       ),
                     )
                     .toList(),
@@ -1552,9 +1629,47 @@ class _RoutineSection extends StatelessWidget {
     );
   }
 
-  Widget _buildRoutineCard(Map<String, String> it, bool isMobile) {
+  Widget _buildRoutineCard(
+      Map<String, String> it, bool isMobile, BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        // Wajib login
+        final isLoggedIn = ServiceLocator.auth.currentUser != null;
+        if (!isLoggedIn) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content:
+                  Text('Silakan login dulu untuk mengakses fitur ini'),
+              backgroundColor: AppColors.statusWarning,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const LoginRegisterScreen(),
+            ),
+          );
+          return;
+        }
+
+        final action = it['action'];
+        if (action == 'routine') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const RoutineScreen(),
+            ),
+          );
+        } else if (action == 'diary') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const DiaryScreen(),
+            ),
+          );
+        }
+      },
       borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
         padding: EdgeInsets.all(isMobile ? 16 : AppSpacing.lg),
