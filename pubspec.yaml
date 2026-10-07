@@ -42,4 +42,5 @@ flutter:
     - assets/images/produk_serum_vitc.png
     - assets/images/produk_sunscreen.png
     - assets/images/produk_toner_bha.png
+    - assets/images/checker.png
     - lib/data/ingredients.json 

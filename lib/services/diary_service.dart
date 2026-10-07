@@ -14,22 +14,18 @@ class DiaryService {
     return uid;
   }
 
-  /// Tambah diary baru
   Future<void> add(DiaryEntry entry) async {
     await _diaryCol(_uid).doc(entry.id).set(entry.toJson());
   }
 
-  /// Update diary
   Future<void> update(DiaryEntry entry) async {
     await _diaryCol(_uid).doc(entry.id).update(entry.toJson());
   }
 
-  /// Hapus diary
   Future<void> delete(String entryId) async {
     await _diaryCol(_uid).doc(entryId).delete();
   }
 
-  /// Ambil semua diary user
   Future<List<DiaryEntry>> getAll() async {
     final snap =
         await _diaryCol(_uid).orderBy('tanggal', descending: true).get();
@@ -38,7 +34,6 @@ class DiaryService {
         .toList();
   }
 
-  /// Stream diary (real-time)
   Stream<List<DiaryEntry>> stream() {
     return _diaryCol(_uid)
         .orderBy('tanggal', descending: true)
@@ -48,7 +43,6 @@ class DiaryService {
             .toList());
   }
 
-  /// Ambil diary pada tanggal tertentu
   Future<DiaryEntry?> getByDate(DateTime date) async {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
@@ -62,9 +56,18 @@ class DiaryService {
     return DiaryEntry.fromJson(doc.data(), id: doc.id);
   }
 
-  /// Cek apakah tanggal tertentu sudah ada diary
   Future<bool> hasEntryOn(DateTime date) async {
     final entry = await getByDate(date);
     return entry != null;
+  }
+
+  Future<int> count() async {
+    try {
+      final snap = await _diaryCol(_uid).count().get();
+      return snap.count ?? 0;
+    } catch (_) {
+      final list = await getAll();
+      return list.length;
+    }
   }
 }

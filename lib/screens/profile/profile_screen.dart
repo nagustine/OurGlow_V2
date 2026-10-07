@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 import '../../models/enums.dart';
 import '../../models/enums_ext.dart';
+import '../../models/scan_result.dart';
 import '../../services/service_locator.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/app_navbar.dart';
 import '../auth/login_register_screen.dart';
 import 'about_screen.dart';
 
@@ -18,11 +20,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _loading = true;
   int _activeTab = 0;
 
-  // Statistik
   int _jumlahDiary = 0;
   int _jumlahProdukRutin = 0;
   int _jumlahScan = 0;
+  List<ScanResult> _riwayatScan = [];
   bool _loadingStats = true;
+  bool _loadingRiwayat = true;
 
   @override
   void initState() {
@@ -31,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) setState(() => _loading = false);
     });
     _loadStats();
+    _loadRiwayat();
   }
 
   AppAuthUser? get _user => ServiceLocator.auth.currentUser;
@@ -38,27 +42,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadStats() async {
     setState(() => _loadingStats = true);
     try {
-      final diary = await ServiceLocator.diary.getAll();
-      final products = await ServiceLocator.firestore.getProducts(
-        ServiceLocator.auth.currentUid ?? '',
-      );
-
-      // Untuk scan, kita asumsikan ada collection terpisah
-      // atau pakai placeholder 0 dulu — nanti setelah fitur Scan jadi
-      // kita bisa ambil dari collection scan_history
-      // Sementara: pakai 0
-      const scanCount = 0;
+      final uid = ServiceLocator.auth.currentUid ?? '';
+      final diaryCount = await ServiceLocator.diary.count();
+      final productCount = await ServiceLocator.firestore.countProducts(uid);
+      final scanCount = await ServiceLocator.scan.count();
 
       if (!mounted) return;
       setState(() {
-        _jumlahDiary = diary.length;
-        _jumlahProdukRutin = products.length;
+        _jumlahDiary = diaryCount;
+        _jumlahProdukRutin = productCount;
         _jumlahScan = scanCount;
         _loadingStats = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadingStats = false);
+    }
+  }
+
+  Future<void> _loadRiwayat() async {
+    setState(() => _loadingRiwayat = true);
+    try {
+      final list = await ServiceLocator.scan.getAll();
+      if (!mounted) return;
+      setState(() {
+        _riwayatScan = list;
+        _loadingRiwayat = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingRiwayat = false);
     }
   }
 
@@ -246,45 +259,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final user = _user;
     if (user == null) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: const Text('Profil')),
-        body: const Center(child: Text('Belum login')),
+        body: Center(child: Text('Belum login')),
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Profil'),
-        actions: [
-          IconButton(
-            onPressed: _loadStats,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
+      body: Column(
+        children: [
+          const AppNavbar(activeMenu: 'Profil'),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(user),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildTabBar(),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildTabContent(user),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildMenuTentang(),
+                        const SizedBox(height: AppSpacing.lg),
+                        _buildLogoutButton(),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(user),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildTabBar(),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildTabContent(user),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildMenuTentang(),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildLogoutButton(),
-                  const SizedBox(height: AppSpacing.xl),
-                ],
-              ),
-            ),
     );
   }
 
@@ -598,50 +607,165 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Riwayat Scan',
-          style: AppText.cardTitle.copyWith(fontSize: 16),
+        Row(
+          children: [
+            Text(
+              'Riwayat Scan',
+              style: AppText.cardTitle.copyWith(fontSize: 16),
+            ),
+            const Spacer(),
+            if (_loadingRiwayat)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: AppColors.cream,
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+        if (_riwayatScan.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.cream,
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.history,
+                  size: 32,
+                  color: AppColors.neutral,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Belum ada riwayat scan',
+                  style: AppText.bodySmall.copyWith(
+                    fontSize: 14,
+                    color: AppColors.textDark.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Mulai scan produk untuk melihat riwayat di sini',
+                  textAlign: TextAlign.center,
+                  style: AppText.caption,
+                ),
+              ],
+            ),
+          )
+        else
+          ..._riwayatScan.map((scan) => _buildRiwayatItem(scan)),
+      ],
+    );
+  }
+
+  Widget _buildRiwayatItem(ScanResult scan) {
+    Color statusColor;
+    String statusLabel;
+    switch (scan.status) {
+      case StatusAman.aman:
+        statusColor = AppColors.statusSafe;
+        statusLabel = 'Aman';
+        break;
+      case StatusAman.perluPerhatian:
+        statusColor = AppColors.statusWarning;
+        statusLabel = 'Perlu Perhatian';
+        break;
+      case StatusAman.bentrok:
+        statusColor = AppColors.statusDanger;
+        statusLabel = 'Bentrok';
+        break;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.cream,
+          borderRadius: BorderRadius.circular(AppRadius.small),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(10),
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              const Icon(
-                Icons.history,
-                size: 32,
-                color: AppColors.neutral,
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.spa_outlined,
+                size: 20,
+                color: AppColors.primary,
               ),
-              const SizedBox(height: 10),
-              Text(
-                'Belum ada riwayat scan',
-                style: AppText.bodySmall.copyWith(
-                  fontSize: 14,
-                  color: AppColors.textDark.withValues(alpha: 0.6),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    scan.productName,
+                    style: AppText.body.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${scan.tanggalLabel} • ${scan.jumlahIngredients} bahan',
+                    style: AppText.caption.copyWith(fontSize: 10),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: statusColor.withValues(alpha: 0.4),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Mulai scan produk untuk melihat riwayat di sini',
-                textAlign: TextAlign.center,
-                style: AppText.caption,
+              child: Text(
+                statusLabel,
+                style: AppText.caption.copyWith(
+                  fontSize: 10,
+                  color: statusColor,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

@@ -13,6 +13,7 @@ class AppColors {
   static const Color statusSafe = Color(0xFF4CAF50);
   static const Color statusWarning = Color(0xFFE8B84B);
   static const Color statusDanger = Color(0xFFC62828);
+  static const Color statusInfo = Color(0xFF2196F3);
   static const Color neutral = Color(0xFFBDBDBD);
   static const Color neutralBg = Color(0xFFEEEEEE);
 }
@@ -38,44 +39,44 @@ class SkinConditionStyles {
     key: 'glowing',
     label: 'Glowing / Sehat',
     color: Color(0xFFE8B84B),
-    emoji: '✨',
+    emoji: '',
   );
   static const SkinCondition normal = SkinCondition(
     key: 'normal',
     label: 'Normal',
     color: Color(0xFFFBD9D3),
-    emoji: '🙂',
+    emoji: '',
   );
   static const SkinCondition oily = SkinCondition(
     key: 'berminyak',
     label: 'Berminyak',
     color: Color(0xFFF5C99B),
-    emoji: '😅',
+    emoji: '',
   );
   static const SkinCondition dry = SkinCondition(
     key: 'kering',
     label: 'Kering',
     color: Color(0xFFBFD9EC),
-    emoji: '🥺',
+    emoji: '',
   );
   static const SkinCondition acne = SkinCondition(
     key: 'berjerawat',
     label: 'Berjerawat / Breakout',
     color: Color(0xFFE89AA6),
-    emoji: '😣',
+    emoji: '',
   );
   static const SkinCondition irritation = SkinCondition(
     key: 'iritasi',
     label: 'Iritasi / Kemerahan',
     color: Color(0xFFC62828),
-    emoji: '🔴',
+    emoji: '',
   );
 
   static const SkinCondition fallback = SkinCondition(
     key: 'unknown',
     label: 'Tidak Diketahui',
     color: Color(0xFFEEEEEE),
-    emoji: '❔',
+    emoji: '',
   );
 
   static const List<SkinCondition> all = [
@@ -279,4 +280,6 @@ class AppAssets {
   static const String produkSerumVitC = 'assets/images/produk_serum_vitc.png';
   static const String produkSunscreen = 'assets/images/produk_sunscreen.png';
   static const String produkTonerBha = 'assets/images/produk_toner_bha.png';
+
+  static const String checker = 'assets/images/checker.png';
 }

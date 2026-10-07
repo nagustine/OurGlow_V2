@@ -54,6 +54,19 @@ class FirestoreService {
         .toList());
   }
 
+  Future<int> countProducts(String uid) async {
+    if (useMock) {
+      return _mockProducts[uid]?.length ?? 0;
+    }
+    try {
+      final snap = await _productCol(uid).count().get();
+      return snap.count ?? 0;
+    } catch (_) {
+      final list = await getProducts(uid);
+      return list.length;
+    }
+  }
+
   // ═══════════════════════════════════════════
   // DIARY
   // ═══════════════════════════════════════════
