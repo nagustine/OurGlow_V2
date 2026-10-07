@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
-import '../../data/mock_diary.dart';
-import '../../models/diary_entry.dart';
-import '../../models/enums.dart';
 import '../../models/enums_ext.dart';
+import '../../models/diary_entry.dart';
 import '../../services/service_locator.dart';
+import '../../widgets/app_navbar.dart';
+import '../../widgets/loading_overlay.dart';
 import 'widgets/calendar_card.dart';
 import 'widgets/summary_card.dart';
-import 'widgets/daily_form_card.dart';
+import 'widgets/diary_form_card.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -75,41 +75,21 @@ class _DiaryScreenState extends State<DiaryScreen> {
         .toSet();
   }
 
-  Future<void> _handleSave({
-    required List<KondisiKulit> kondisi,
-    required int intensitas,
-    required List<dynamic> produk,
-    required String catatan,
-  }) async {
+  Future<void> _handleSave(DiaryEntry entry) async {
     final existing = _entryForSelectedDate;
 
     try {
       if (existing != null) {
-        final updated = existing.copyWith(
-          kondisiKulit: kondisi,
-          intensitas: intensitas,
-          produkDipakai: produk.cast(),
-          catatan: catatan,
-        );
-        await ServiceLocator.diary.update(updated);
+        await ServiceLocator.diary.update(entry);
         if (!mounted) return;
         setState(() {
           final idx = _entries.indexWhere((e) => e.id == existing.id);
-          if (idx != -1) _entries[idx] = updated;
+          if (idx != -1) _entries[idx] = entry;
         });
       } else {
-        final newEntry = DiaryEntry(
-          id: 'diary_${_selectedDate.millisecondsSinceEpoch}',
-          tanggal: _selectedDate,
-          kondisiKulit: kondisi,
-          intensitas: intensitas,
-          produkDipakai: produk.cast(),
-          catatan: catatan,
-          statusRutin: StatusAman.aman,
-        );
-        await ServiceLocator.diary.add(newEntry);
+        await ServiceLocator.diary.add(entry);
         if (!mounted) return;
-        setState(() => _entries.add(newEntry));
+        setState(() => _entries.add(entry));
       }
 
       if (!mounted) return;
@@ -140,98 +120,121 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width >= 1024;
+    final hPad = isDesktop ? 60.0 : 16.0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Skin Diary'),
-        actions: [
-          IconButton(
-            onPressed: _loadEntries,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? _buildError()
-              : SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isDesktop ? 60 : 16,
-                    vertical: 16,
-                  ),
+      body: LoadingOverlay(
+        isLoading: _loading,
+        child: Column(
+          children: [
+            const AppNavbar(activeMenu: 'Skin Diary'),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _loadEntries,
+                color: AppColors.primary,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ===== ATAS: Kalender + Ringkasan =====
-                      if (isDesktop)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: CalendarCard(
-                                selectedDate: _selectedDate,
-                                onDateSelected: (d) =>
-                                    setState(() => _selectedDate = d),
-                                markedDates: _markedDates,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: SummaryCard(
-                                entries: _entriesThisMonth,
-                                bulan: _selectedDate,
-                              ),
-                            ),
-                          ],
-                        )
-                      else ...[
-                        CalendarCard(
-                          selectedDate: _selectedDate,
-                          onDateSelected: (d) =>
-                              setState(() => _selectedDate = d),
-                          markedDates: _markedDates,
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: hPad,
+                          vertical: 16,
                         ),
-                        const SizedBox(height: 16),
-                        SummaryCard(
-                          entries: _entriesThisMonth,
-                          bulan: _selectedDate,
-                        ),
-                      ],
-
-                      const SizedBox(height: 24),
-
-                      // ===== TENGAH: Form Input =====
-                      DailyFormCard(
-                        key: ValueKey(_selectedDate.toIso8601String()),
-                        tanggal: _selectedDate,
-                        initialKondisi:
-                            _entryForSelectedDate?.kondisiKulit ?? const [],
-                        initialIntensitas:
-                            _entryForSelectedDate?.intensitas ?? 50,
-                        initialProduk:
-                            _entryForSelectedDate?.produkDipakai ?? const [],
-                        initialCatatan:
-                            _entryForSelectedDate?.catatan ?? '',
-                        produkTersedia: MockDiary.produkTersedia,
-                        onSave: _handleSave,
+                        child: _error != null
+                            ? _buildError()
+                            : Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.stretch,
+                                children: [
+                                  if (isDesktop)
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: CalendarCard(
+                                            selectedDate: _selectedDate,
+                                            onDateSelected: (d) =>
+                                                setState(() =>
+                                                    _selectedDate = d),
+                                            markedDates: _markedDates,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: SummaryCard(
+                                            entries: _entriesThisMonth,
+                                            bulan: _selectedDate,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  else ...[
+                                    CalendarCard(
+                                      selectedDate: _selectedDate,
+                                      onDateSelected: (d) => setState(
+                                          () => _selectedDate = d),
+                                      markedDates: _markedDates,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    SummaryCard(
+                                      entries: _entriesThisMonth,
+                                      bulan: _selectedDate,
+                                    ),
+                                  ],
+                                  const SizedBox(height: 24),
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius:
+                                          BorderRadius.circular(28),
+                                      border: Border.all(
+                                        color: AppColors.accent,
+                                        width: 3,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary
+                                              .withValues(alpha: 0.08),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: DiaryFormCard(
+                                      key: ValueKey(
+                                        _selectedDate
+                                            .toIso8601String(),
+                                      ),
+                                      tanggal: _selectedDate,
+                                      initial: _entryForSelectedDate,
+                                      onSave: _handleSave,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  _buildRiwayat(),
+                                ],
+                              ),
                       ),
-
                       const SizedBox(height: 24),
-
-                      // ===== BAWAH: Riwayat Terbaru =====
-                      _buildRiwayatTerbaru(),
-
-                      const SizedBox(height: 32),
+                      // Copyright full width + ikut scroll
+                      const _CopyrightBar(),
                     ],
                   ),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildRiwayatTerbaru() {
+  Widget _buildRiwayat() {
     if (_entries.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -301,10 +304,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 style: AppText.cardTitle.copyWith(fontSize: 16),
               ),
               const Spacer(),
-              Text(
-                '${sorted.length} catatan',
-                style: AppText.caption,
-              ),
+              Text('${sorted.length} catatan', style: AppText.caption),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -320,9 +320,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
-        onTap: () {
-          setState(() => _selectedDate = e.tanggal);
-        },
+        onTap: () => setState(() => _selectedDate = e.tanggal),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(12),
@@ -341,7 +339,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date Box
               Container(
                 width: 48,
                 height: 48,
@@ -375,75 +372,34 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Kondisi chips
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: e.kondisiKulit.map((k) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            k.label,
-                            style: AppText.caption.copyWith(
-                              fontSize: 10,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 6),
-                    // Catatan
                     Text(
-                      e.catatan.isEmpty ? '(tidak ada catatan)' : e.catatan,
-                      style: AppText.bodySmall.copyWith(
-                        fontSize: 12,
-                        height: 1.4,
-                        color: e.catatan.isEmpty
-                            ? AppColors.textDark.withValues(alpha: 0.4)
-                            : AppColors.textDark,
+                      e.kondisiUtama.label,
+                      style: AppText.body.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    // Intensitas
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.trending_up,
-                          size: 12,
-                          color: AppColors.primary.withValues(alpha: 0.6),
+                    if (e.masalah.isNotEmpty)
+                      Text(
+                        e.masalah.join(', '),
+                        style: AppText.caption.copyWith(fontSize: 11),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (e.hasCatatan) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        e.catatan,
+                        style: AppText.bodySmall.copyWith(
+                          fontSize: 11,
+                          height: 1.4,
+                          color: AppColors.textDark.withValues(alpha: 0.7),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Intensitas ${e.intensitas}%',
-                          style: AppText.caption.copyWith(fontSize: 10),
-                        ),
-                        if (e.produkDipakai.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.spa_outlined,
-                            size: 12,
-                            color:
-                                AppColors.primary.withValues(alpha: 0.6),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${e.jumlahProduk} produk',
-                            style: AppText.caption.copyWith(fontSize: 10),
-                          ),
-                        ],
-                      ],
-                    ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -459,7 +415,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.error_outline,
@@ -485,6 +440,43 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CopyrightBar extends StatelessWidget {
+  const _CopyrightBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: AppColors.primary,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        children: [
+          Text(
+            '© 2026 OurGlow — Skincare Checker',
+            textAlign: TextAlign.center,
+            style: AppText.bodySmall.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Dea Apriani Agustin',
+            textAlign: TextAlign.center,
+            style: AppText.bodySmall.copyWith(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }

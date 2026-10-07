@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 import '../services/service_locator.dart';
+import '../screens/home/home_screen.dart';
 import '../screens/auth/login_register_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/scan/scan_screen.dart';
@@ -20,7 +21,11 @@ class AppNavbar extends StatelessWidget {
     final isLoggedIn = ServiceLocator.auth.currentUser != null;
 
     if (menu == 'Beranda') {
-      Navigator.popUntil(context, (route) => route.isFirst);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
       return;
     }
 
@@ -56,9 +61,10 @@ class AppNavbar extends StatelessWidget {
         return;
     }
 
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => target),
+      (route) => false,
     );
   }
 
@@ -68,79 +74,72 @@ class AppNavbar extends StatelessWidget {
     final isMobile = width < 600;
     final isTablet = width >= 600 && width < 1024;
 
-    if (isMobile || isTablet) {
-      return Container(
-        height: 56,
-        color: AppColors.primary,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 48,
-              height: 48,
-              child: InkWell(
-                onTap: () => _goTo(context, 'Beranda'),
-                borderRadius: BorderRadius.circular(AppRadius.small),
-                child: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ),
-            Image.asset(
-              AppAssets.logo,
-              height: 32,
-              errorBuilder: (_, __, ___) => const SizedBox(height: 32),
-            ),
-            const Spacer(),
-            _buildProfileButton(context),
-          ],
-        ),
-      );
-    }
+    // Ukuran responsif
+    final logoSize = isMobile ? 36.0 : (isTablet ? 44.0 : 54.0);
+    final fontSize = isMobile ? 11.0 : (isTablet ? 12.0 : 14.0);
+    final hPad = isMobile ? 8.0 : (isTablet ? 16.0 : 24.0);
+    final itemPadH = isMobile ? 6.0 : 12.0;
+    final itemPadV = isMobile ? 8.0 : 12.0;
 
     return Container(
       color: AppColors.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: hPad,
+        vertical: isMobile ? 8 : 12,
+      ),
       child: Row(
         children: [
+          // Logo
           GestureDetector(
             onTap: () => _goTo(context, 'Beranda'),
             child: Image.asset(
               AppAssets.logo,
-              width: 54,
-              height: 54,
-              errorBuilder: (_, __, ___) => const SizedBox(
-                width: 54,
-                height: 54,
+              width: logoSize,
+              height: logoSize,
+              errorBuilder: (_, __, ___) => SizedBox(
+                width: logoSize,
+                height: logoSize,
               ),
             ),
           ),
           const Spacer(),
-          _navItem(context, 'Beranda'),
-          _navItem(context, 'Scan Produk'),
-          _navItem(context, 'Routine Checker'),
-          _navItem(context, 'Skin Diary'),
-          const SizedBox(width: 8),
-          _buildProfileButton(context),
+
+          // Menu items
+          _navItem(context, 'Beranda', isMobile, fontSize, itemPadH, itemPadV),
+          _navItem(context, 'Scan Produk', isMobile, fontSize, itemPadH, itemPadV),
+          _navItem(context, 'Routine Checker', isMobile, fontSize, itemPadH, itemPadV),
+          _navItem(context, 'Skin Diary', isMobile, fontSize, itemPadH, itemPadV),
+
+          SizedBox(width: isMobile ? 4 : 8),
+          _buildProfileButton(context, isMobile, fontSize),
         ],
       ),
     );
   }
 
-  Widget _navItem(BuildContext context, String label) {
+  Widget _navItem(
+    BuildContext context,
+    String label,
+    bool isMobile,
+    double fontSize,
+    double padH,
+    double padV,
+  ) {
     final active = label == activeMenu;
     return InkWell(
       onTap: () => _goTo(context, label),
       borderRadius: BorderRadius.circular(AppRadius.small),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        constraints: BoxConstraints(
+          minWidth: isMobile ? 0 : 48,
+          minHeight: isMobile ? 36 : 48,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
         alignment: Alignment.center,
         child: Text(
           label,
           style: AppText.body.copyWith(
+            fontSize: fontSize,
             color: active
                 ? AppColors.accent
                 : Colors.white.withValues(alpha: 0.85),
@@ -155,7 +154,11 @@ class AppNavbar extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileButton(BuildContext context) {
+  Widget _buildProfileButton(
+    BuildContext context,
+    bool isMobile,
+    double fontSize,
+  ) {
     if (_isLoggedIn) {
       final user = ServiceLocator.auth.currentUser;
       return InkWell(
@@ -167,7 +170,10 @@ class AppNavbar extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 6 : 12,
+            vertical: isMobile ? 4 : 8,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.pill),
             border: Border.all(color: AppColors.accent, width: 1.5),
@@ -175,8 +181,8 @@ class AppNavbar extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 28,
-                height: 28,
+                width: isMobile ? 20 : 28,
+                height: isMobile ? 20 : 28,
                 decoration: const BoxDecoration(
                   color: AppColors.accent,
                   shape: BoxShape.circle,
@@ -189,25 +195,28 @@ class AppNavbar extends StatelessWidget {
                   style: AppText.badge.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
+                    fontSize: isMobile ? 10 : 12,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Profil',
-                style: AppText.body.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+              if (!isMobile) ...[
+                const SizedBox(width: 8),
+                Text(
+                  'Profil',
+                  style: AppText.body.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: fontSize,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
       );
     }
 
-    return ElevatedButton.icon(
+    return ElevatedButton(
       onPressed: () {
         Navigator.push(
           context,
@@ -216,14 +225,22 @@ class AppNavbar extends StatelessWidget {
           ),
         );
       },
-      icon: const Icon(Icons.login, size: 16),
-      label: const Text('Login'),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.accent,
         foregroundColor: AppColors.primary,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 10 : 16,
+          vertical: isMobile ? 6 : 10,
+        ),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: const StadiumBorder(),
-        textStyle: AppText.buttonLabel.copyWith(fontSize: 13),
+      ),
+      child: Text(
+        'Login',
+        style: AppText.buttonLabel.copyWith(
+          fontSize: isMobile ? 11 : 13,
+        ),
       ),
     );
   }

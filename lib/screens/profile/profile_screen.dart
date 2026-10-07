@@ -6,6 +6,7 @@ import '../../models/scan_result.dart';
 import '../../services/service_locator.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/app_navbar.dart';
+import '../../widgets/loading_overlay.dart';
 import '../auth/login_register_screen.dart';
 import 'about_screen.dart';
 
@@ -30,14 +31,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) setState(() => _loading = false);
-    });
-    _loadStats();
-    _loadRiwayat();
+    _loadAll();
   }
 
   AppAuthUser? get _user => ServiceLocator.auth.currentUser;
+
+  Future<void> _loadAll() async {
+    setState(() => _loading = true);
+    await Future.wait([
+      _loadStats(),
+      _loadRiwayat(),
+    ]);
+    if (!mounted) return;
+    setState(() => _loading = false);
+  }
 
   Future<void> _loadStats() async {
     setState(() => _loadingStats = true);
@@ -267,32 +274,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          const AppNavbar(activeMenu: 'Profil'),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(user),
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildTabBar(),
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildTabContent(user),
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildMenuTentang(),
-                        const SizedBox(height: AppSpacing.lg),
-                        _buildLogoutButton(),
-                        const SizedBox(height: AppSpacing.xl),
-                      ],
-                    ),
-                  ),
-          ),
-        ],
+      body: LoadingOverlay(
+        isLoading: _loading,
+        child: Column(
+          children: [
+            const AppNavbar(activeMenu: 'Profil'),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(user),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildTabBar(),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildTabContent(user),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildMenuTentang(),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildLogoutButton(),
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

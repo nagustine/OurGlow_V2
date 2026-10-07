@@ -16,15 +16,15 @@ class SummaryCard extends StatelessWidget {
   int get _totalEntry => entries.length;
 
   int get _hariGlowing => entries
-      .where((e) => e.kondisiKulit.contains(KondisiKulit.glowing))
+      .where((e) => e.kondisiUtama == KondisiKulit.glowing)
       .length;
 
   int get _hariBreakout => entries
-      .where((e) => e.kondisiKulit.contains(KondisiKulit.berjerawat))
+      .where((e) => e.kondisiUtama == KondisiKulit.berjerawat)
       .length;
 
   int get _hariIritasi => entries
-      .where((e) => e.kondisiKulit.contains(KondisiKulit.iritasi))
+      .where((e) => e.kondisiUtama == KondisiKulit.iritasi)
       .length;
 
   double get _rataIntensitas {
