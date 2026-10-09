@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 import '../../models/diary_entry.dart';
+import '../../utils/product_icons.dart';
 
 class DiaryProductSheet extends StatefulWidget {
   final DiaryProduct? initial;
@@ -17,15 +18,16 @@ class _DiaryProductSheetState extends State<DiaryProductSheet> {
   final Map<String, dynamic> _detail = {};
   late TextEditingController _namaCtrl;
   String _nama = '';
+  bool _namaError = false;
 
-  static const List<Map<String, dynamic>> _kategoriList = [
-  {'key': 'sunscreen', 'label': 'Sunscreen', 'icon': Icons.spa_outlined},
-  {'key': 'serum', 'label': 'Serum', 'icon': Icons.spa_outlined},
-  {'key': 'moisturizer', 'label': 'Moisturizer', 'icon': Icons.spa_outlined},
-  {'key': 'cleanser', 'label': 'Cleanser', 'icon': Icons.spa_outlined},
-  {'key': 'toner', 'label': 'Toner', 'icon': Icons.spa_outlined},
-  {'key': 'lainnya', 'label': 'Lainnya', 'icon': Icons.spa_outlined},
-];
+  List<Map<String, dynamic>> get _kategoriList {
+    return ProductIcons.allKategori.map((k) {
+      return {
+        ...k,
+        'icon': ProductIcons.forKategori(k['key'] as String),
+      };
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -61,6 +63,7 @@ class _DiaryProductSheetState extends State<DiaryProductSheet> {
 
   void _selesai() {
     if (_nama.trim().isEmpty) {
+      setState(() => _namaError = true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Isi nama produk dulu'),
@@ -193,10 +196,57 @@ class _DiaryProductSheetState extends State<DiaryProductSheet> {
         _label('Nama produk'),
         TextField(
           controller: _namaCtrl,
-          onChanged: (v) => _nama = v,
+          onChanged: (v) {
+            _nama = v;
+            if (_namaError && v.trim().isNotEmpty) {
+              setState(() => _namaError = false);
+            }
+          },
           style: AppText.body,
-          decoration: _inputDecoration('Contoh: Sunscreen SPF 50'),
+          decoration: InputDecoration(
+            hintText: 'Contoh: Sunscreen SPF 50',
+            hintStyle: AppText.body.copyWith(
+              color: AppColors.textDark.withValues(alpha: 0.4),
+            ),
+            filled: true,
+            fillColor: AppColors.background,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.small),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.small),
+              borderSide: BorderSide(
+                color: _namaError
+                    ? AppColors.statusDanger
+                    : AppColors.primary.withValues(alpha: 0.15),
+                width: _namaError ? 2 : 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.small),
+              borderSide: const BorderSide(
+                color: AppColors.accent,
+                width: 1.5,
+              ),
+            ),
+          ),
         ),
+        if (_namaError)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              'Nama produk wajib diisi',
+              style: AppText.caption.copyWith(
+                color: AppColors.statusDanger,
+                fontSize: 11,
+              ),
+            ),
+          ),
         const SizedBox(height: AppSpacing.lg),
         if (_kategori == 'sunscreen') ..._sunscreenFields(),
         if (_kategori == 'serum') ..._serumFields(),
@@ -211,6 +261,7 @@ class _DiaryProductSheetState extends State<DiaryProductSheet> {
           child: ElevatedButton(
             onPressed: () {
               if (_namaCtrl.text.trim().isEmpty) {
+                setState(() => _namaError = true);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Isi nama produk dulu'),

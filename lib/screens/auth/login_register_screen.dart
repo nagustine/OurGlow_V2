@@ -133,92 +133,73 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
           height: height,
           child: Stack(
             children: [
+              // HEADER DENGAN GRADASI PINK
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
                 height: headerHeight,
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.primary,
+                        AppColors.primary.withValues(alpha: 0.8),
+                        AppColors.accent.withValues(alpha: 0.6),
+                      ],
+                    ),
                   ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        bottom: -60,
-                        left: -40,
-                        right: -40,
-                        child: Container(
-                          height: 240,
-                          decoration: BoxDecoration(
-                            gradient: RadialGradient(
-                              colors: [
-                                AppColors.accent.withValues(alpha: 0.55),
-                                AppColors.sectionBg.withValues(alpha: 0.0),
-                              ],
-                              radius: 0.9,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            24,
-                            16,
-                            24,
-                            0,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'OurGlow.',
-                                    style: AppText.cardTitle.copyWith(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  _TogglePill(
-                                    isLogin: _isLogin,
-                                    onChanged: _toggleMode,
-                                  ),
-                                ],
+                              // GANTI TEKS DENGAN LOGO DARI ASSETS
+                              Image.asset(
+                                'assets/images/our_glow.png',
+                                height: 55,
+                                fit: BoxFit.contain,
                               ),
-                              const SizedBox(height: 40),
-                              Text(
-                                _isLogin
-                                    ? 'Selamat Datang\nKembali 👋'
-                                    : 'Buat Akun\nBaru ✨',
-                                style: AppText.sectionTitle.copyWith(
-                                  color: Colors.white,
-                                  fontSize: 32,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _isLogin
-                                    ? 'Masuk untuk lanjut memantau kulitmu'
-                                    : 'Daftar untuk mulai tracking kulitmu',
-                                style: AppText.bodySmall.copyWith(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.85),
-                                  fontSize: 13,
-                                ),
+                              const Spacer(),
+                              _TogglePill(
+                                isLogin: _isLogin,
+                                onChanged: _toggleMode,
                               ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 40),
+                          Text(
+                            _isLogin
+                                ? 'Selamat Datang\nKembali'
+                                : 'Buat Akun\nBaru',
+                            style: AppText.sectionTitle.copyWith(
+                              color: Colors.white,
+                              fontSize: 32,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _isLogin
+                                ? 'Masuk untuk lanjut memantau kulitmu'
+                                : 'Daftar untuk mulai tracking kulitmu',
+                            style: AppText.bodySmall.copyWith(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
+              // BODY / FORM
               Positioned(
                 top: headerHeight - 40,
                 left: 0,
@@ -260,61 +241,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                               : _buildRegisterForm(),
                         ),
                         const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Divider(
-                                color: AppColors.neutral,
-                                height: 1,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              child: Text(
-                                'atau lanjutkan dengan',
-                                style: AppText.caption,
-                              ),
-                            ),
-                            const Expanded(
-                              child: Divider(
-                                color: AppColors.neutral,
-                                height: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: InkWell(
-                            onTap: () => _showSnack(
-                              'Fitur Google Sign-In belum tersedia',
-                            ),
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.primary,
-                                  width: 1.5,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                'G',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
+                        // Bagian Google Sign-In sudah dihapus
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

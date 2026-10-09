@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/theme.dart';
-import '../../widgets/app_navbar.dart';
+import '../../widgets/back_navbar.dart';
 import 'scan_review_screen.dart';
 
 class ScanCameraScreen extends StatefulWidget {
@@ -66,7 +66,7 @@ class _ScanCameraScreenState extends State<ScanCameraScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AppNavbar(activeMenu: 'Scan Produk'),
+      const BackNavbar(title: 'Scan Ingredients'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),

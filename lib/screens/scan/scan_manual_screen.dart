@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
-import '../../widgets/app_navbar.dart';
+import '../../widgets/back_navbar.dart';
 import 'scan_review_screen.dart';
 
 class ScanManualScreen extends StatefulWidget {
@@ -50,7 +50,7 @@ class _ScanManualScreenState extends State<ScanManualScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AppNavbar(activeMenu: 'Scan Produk'),
+ const BackNavbar(title: 'Enter Ingredients'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),

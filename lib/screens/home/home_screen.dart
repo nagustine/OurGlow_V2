@@ -20,14 +20,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
+    return const Scaffold(
       backgroundColor: AppColors.background,
-      body: const Column(
+      drawer: AppDrawer(activeMenu: 'Beranda'),
+      body: Column(
         children: [
           AppNavbar(activeMenu: 'Beranda'),
           Expanded(

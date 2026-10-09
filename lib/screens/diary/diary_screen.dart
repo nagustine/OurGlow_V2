@@ -3,6 +3,7 @@ import '../../theme/theme.dart';
 import '../../models/enums_ext.dart';
 import '../../models/diary_entry.dart';
 import '../../services/service_locator.dart';
+import '../../utils/product_icons.dart';
 import '../../widgets/app_navbar.dart';
 import '../../widgets/loading_overlay.dart';
 import 'widgets/calendar_card.dart';
@@ -124,6 +125,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const AppDrawer(activeMenu: 'Skin Diary'),
       body: LoadingOverlay(
         isLoading: _loading,
         child: Column(
@@ -221,7 +223,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
                               ),
                       ),
                       const SizedBox(height: 24),
-                      // Copyright full width + ikut scroll
                       const _CopyrightBar(),
                     ],
                   ),
@@ -379,22 +380,86 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    if (e.masalah.isNotEmpty)
-                      Text(
-                        e.masalah.join(', '),
-                        style: AppText.caption.copyWith(fontSize: 11),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    if (e.hasCatatan) ...[
+                    if (e.masalah.isNotEmpty) ...[
                       const SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 12,
+                            color: AppColors.statusWarning
+                                .withValues(alpha: 0.8),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              e.masalah.join(', '),
+                              style: AppText.caption.copyWith(
+                                fontSize: 11,
+                                color: AppColors.textDark
+                                    .withValues(alpha: 0.7),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (e.produkDipakai.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              ProductIcons.forNama(
+                                e.produkDipakai.isNotEmpty
+                                    ? e.produkDipakai.first.nama
+                                    : '',
+                              ),
+                              size: 12,
+                              color: AppColors.primary
+                                  .withValues(alpha: 0.8),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                e.produkDipakai
+                                    .map((p) => p.nama)
+                                    .join(' • '),
+                                style: AppText.caption.copyWith(
+                                  fontSize: 10.5,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.3,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if (e.hasCatatan) ...[
+                      const SizedBox(height: 6),
                       Text(
                         e.catatan,
                         style: AppText.bodySmall.copyWith(
                           fontSize: 11,
                           height: 1.4,
-                          color: AppColors.textDark.withValues(alpha: 0.7),
+                          color: AppColors.textDark.withValues(alpha: 0.6),
+                          fontStyle: FontStyle.italic,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

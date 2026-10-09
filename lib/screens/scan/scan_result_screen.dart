@@ -5,7 +5,7 @@ import '../../theme/theme.dart';
 import '../../models/scan_result.dart';
 import '../../models/enums.dart';
 import '../../services/service_locator.dart';
-import '../../widgets/app_navbar.dart';
+import '../../widgets/back_navbar.dart';
 
 class ScanResultScreen extends StatefulWidget {
   final String rawText;
@@ -95,7 +95,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          const AppNavbar(activeMenu: 'Scan Produk'),
+          const BackNavbar(title: 'Analysis Result'),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),

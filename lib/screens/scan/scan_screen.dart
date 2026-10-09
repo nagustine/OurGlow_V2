@@ -54,6 +54,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const AppDrawer(activeMenu: 'Scan Produk'),
       body: Column(
         children: [
           const AppNavbar(activeMenu: 'Scan Produk'),

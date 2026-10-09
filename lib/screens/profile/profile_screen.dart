@@ -274,6 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const AppDrawer(activeMenu: 'Profil'),
       body: LoadingOverlay(
         isLoading: _loading,
         child: Column(

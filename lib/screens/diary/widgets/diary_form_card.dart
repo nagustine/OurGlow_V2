@@ -3,6 +3,7 @@ import '../../../theme/theme.dart';
 import '../../../models/enums.dart';
 import '../../../models/enums_ext.dart';
 import '../../../models/diary_entry.dart';
+import '../../../utils/product_icons.dart';
 import '../diary_product_sheet.dart';
 
 class DiaryFormCard extends StatefulWidget {
@@ -402,8 +403,8 @@ class _DiaryFormCardState extends State<DiaryFormCard> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.spa_outlined,
+                      child: Icon(
+                        ProductIcons.forKategori(p.kategori),
                         size: 18,
                         color: AppColors.primary,
                       ),
@@ -431,13 +432,25 @@ class _DiaryFormCardState extends State<DiaryFormCard> {
                     ),
                     IconButton(
                       onPressed: () => _editProduk(i),
-                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      icon: const Icon(Icons.edit_outlined, size: 16),
                       color: AppColors.primary,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      visualDensity: VisualDensity.compact,
                     ),
                     IconButton(
                       onPressed: () => _hapusProduk(i),
-                      icon: const Icon(Icons.delete_outline, size: 18),
+                      icon: const Icon(Icons.delete_outline, size: 16),
                       color: AppColors.statusDanger,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      visualDensity: VisualDensity.compact,
                     ),
                   ],
                 ),
