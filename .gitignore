@@ -6,7 +6,6 @@
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
-.metadata
 
 # IDE
 .idea/
@@ -20,14 +19,11 @@ build/
 Thumbs.db
 desktop.ini
 
-# Firebase Config (API key - jangan di-commit)
-lib/firebase_options.dart
+# Firebase Config (rahasia)
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 macos/Runner/GoogleService-Info.plist
 windows/runner/google-services.json
-firebase.json
-.firebaserc
 
 # Build Output
 /build/

@@ -1,0 +1,37 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "ourglow",
+          "appId": "1:973167727452:android:50bb0f2a29651334e16799",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "ourglow",
+          "configurations": {
+            "android": "1:973167727452:android:50bb0f2a29651334e16799",
+            "ios": "1:973167727452:ios:8d2b247c29f09ef6e16799",
+            "web": "1:973167727452:web:9d3557a8ac707d7be16799"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
