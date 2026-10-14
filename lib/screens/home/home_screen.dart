@@ -22,16 +22,30 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.background,
-      drawer: AppDrawer(activeMenu: 'Beranda'),
-      body: Column(
-        children: [
-          AppNavbar(activeMenu: 'Beranda'),
-          Expanded(
-            child: _HomeBody(),
+    return Scaffold(
+      drawer: const AppDrawer(activeMenu: 'Beranda'),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.0, 0.35, 0.7, 1.0],
+            colors: [
+              Color(0xFFFFF8F3),
+              Color(0xFFFDE8E4),
+              Color(0xFFFAD4D0),
+              Color(0xFFF5B8B5),
+            ],
           ),
-        ],
+        ),
+        child: const Column(
+          children: [
+            AppNavbar(activeMenu: 'Beranda'),
+            Expanded(
+              child: _HomeBody(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -282,47 +296,27 @@ class _HeroSectionState extends State<_HeroSection>
               ],
             ),
             const SizedBox(height: 12),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (isMobile) {
-                  return SizedBox(
-                    height: 220,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: mockProducts.length,
-                      padding: EdgeInsets.zero,
-                      itemBuilder: (context, index) {
-                        final product = mockProducts[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: SizedBox(
-                            width: constraints.maxWidth,
-                            child:
-                                _ProductCarouselCard(product: product),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }
-                return SizedBox(
-                  height: 220,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: mockProducts.length,
-                    onPageChanged: (i) {
-                      setState(() => _currentPage = i);
-                      _startAutoPlay();
-                    },
-                    itemBuilder: (context, index) {
-                      final product = mockProducts[index];
-                      return _ProductCarouselCard(product: product);
-                    },
-                  ),
-                );
-              },
+
+            // ▼▼▼ CAROUSEL — sekarang pakai PageView di semua ukuran ▼▼▼
+            SizedBox(
+              height: 220,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: mockProducts.length,
+                onPageChanged: (i) {
+                  setState(() => _currentPage = i);
+                  _startAutoPlay();
+                },
+                itemBuilder: (context, index) {
+                  final product = mockProducts[index];
+                  return _ProductCarouselCard(product: product);
+                },
+              ),
             ),
+
             const SizedBox(height: 16),
+
+            // ▼▼▼ INDIKATOR DOTS — gerak sesuai halaman aktif ▼▼▼
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -951,7 +945,7 @@ class _WhySection extends StatelessWidget {
     return _ScrollReveal(
       child: Container(
         width: double.infinity,
-        color: AppColors.sectionBg,
+        color: Colors.white.withValues(alpha: 0.4),
         padding: EdgeInsets.symmetric(
           horizontal: hPad,
           vertical: isMobile ? 24 : AppSpacing.xl,
@@ -1304,7 +1298,7 @@ class _TipsSection extends StatelessWidget {
     return _ScrollReveal(
       child: Container(
         width: double.infinity,
-        color: AppColors.sectionBg,
+        color: Colors.white.withValues(alpha: 0.4),
         padding: EdgeInsets.symmetric(
           horizontal: hPad,
           vertical: isMobile ? 24 : AppSpacing.xl,

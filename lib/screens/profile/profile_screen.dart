@@ -542,7 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Expanded(
               child: _statCard(
-                icon: Icons.book_outlined,
+                iconPath: AppAssets.diary,
                 value: '$_jumlahDiary',
                 label: 'Hari Diary',
               ),
@@ -550,7 +550,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _statCard(
-                icon: Icons.spa_outlined,
+                iconPath: AppAssets.girlScan,
                 value: '$_jumlahProdukRutin',
                 label: 'Produk Rutin',
               ),
@@ -558,7 +558,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _statCard(
-                icon: Icons.qr_code_scanner,
+                iconPath: AppAssets.checker,
                 value: '$_jumlahScan',
                 label: 'Kali Scan',
               ),
@@ -570,7 +570,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _statCard({
-    required IconData icon,
+    required String iconPath,
     required String value,
     required String label,
   }) {
@@ -592,12 +592,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppColors.primary, size: 32),
-          const SizedBox(height: 8),
+          SizedBox(
+            width: 72,
+            height: 72,
+            child: Image.asset(
+              iconPath,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(
+                Icons.image_not_supported_outlined,
+                color: AppColors.primary,
+                size: 40,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: AppText.sectionTitle.copyWith(
-              fontSize: 22,
+              fontSize: 24,
               color: AppColors.primary,
             ),
           ),
@@ -605,7 +617,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: AppText.bodySmall.copyWith(fontSize: 12),
+            style: AppText.bodySmall.copyWith(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -649,12 +664,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Column(
               children: [
-                const Icon(
-                  Icons.history,
-                  size: 32,
-                  color: AppColors.neutral,
+                SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: Image.asset(
+                    AppAssets.checker,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.history,
+                      size: 40,
+                      color: AppColors.neutral,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Text(
                   'Belum ada riwayat scan',
                   style: AppText.bodySmall.copyWith(
@@ -716,17 +739,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: const Icon(
-                Icons.spa_outlined,
-                size: 20,
-                color: AppColors.primary,
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: Image.asset(
+                  AppAssets.checker,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.spa_outlined,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),

@@ -24,6 +24,7 @@ class ScanReviewScreen extends StatefulWidget {
 
 class _ScanReviewScreenState extends State<ScanReviewScreen> {
   late TextEditingController _ctrl;
+  late TextEditingController _namaCtrl;
   bool _edited = false;
 
   static const List<String> _mockOcrResults = [
@@ -40,16 +41,20 @@ class _ScanReviewScreenState extends State<ScanReviewScreen> {
         ? widget.rawText
         : _mockOcrResults[Random().nextInt(_mockOcrResults.length)];
     _ctrl = TextEditingController(text: initial);
+    _namaCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
     _ctrl.dispose();
+    _namaCtrl.dispose();
     super.dispose();
   }
 
   void _analisis() {
     final text = _ctrl.text.trim();
+    final nama = _namaCtrl.text.trim();
+
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -67,6 +72,7 @@ class _ScanReviewScreenState extends State<ScanReviewScreen> {
         builder: (_) => ScanResultScreen(
           rawText: text,
           fotoPath: widget.fotoPath,
+          productName: nama.isEmpty ? null : nama,
         ),
       ),
     );
@@ -176,6 +182,55 @@ class _ScanReviewScreenState extends State<ScanReviewScreen> {
                             ),
                           ),
                         if (widget.fromOcr) const SizedBox(height: 20),
+
+                        Text(
+                          'Nama Produk',
+                          style: AppText.cardTitle.copyWith(fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Isi nama produk skincare yang kamu scan',
+                          style: AppText.caption,
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _namaCtrl,
+                          style: AppText.body,
+                          decoration: InputDecoration(
+                            hintText: 'Contoh: BHA Exfoliating Toner',
+                            filled: true,
+                            fillColor: AppColors.background,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 16,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.spa_outlined,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: AppColors.primary
+                                    .withValues(alpha: 0.15),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                color: AppColors.accent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
                         Row(
                           children: [
                             Text(

@@ -2,6 +2,7 @@
 
 Aplikasi Flutter berbasis web untuk memindai komposisi produk skincare, memeriksa kombinasi bahan, mengatur rutinitas, dan mencatat kondisi kulit harian.
 
+**Link Publish:** https://ourglow.web.app
 **Repository:** https://github.com/nagustine/OurGlow_V2
 
 ---
